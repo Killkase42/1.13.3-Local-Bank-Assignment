@@ -28,7 +28,7 @@ public class ExternalData {
      *pre: User presses create account button and information in the text fields is valid.
      *post: Creates file with proper internal formatting.
      */
-    public static void createClientAccount(int accountNumber, String clientName, String clientPassword, int clientBalance){
+    public static void createClientAccount(int accountNumber, String clientName, String clientPassword, double clientBalance){
         Path path = Paths.get(location, clientName + ".txt");
 
         try {

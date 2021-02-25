@@ -2,20 +2,15 @@ package com.company;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Random;
-import java.util.regex.Pattern;
-
-import javax.imageio.ImageIO;
 import javax.swing.*;
+
+import static com.company.GDF.*;
 
 public class GraphicalDisplays extends javax.swing.JFrame {
 
@@ -32,122 +27,6 @@ public class GraphicalDisplays extends javax.swing.JFrame {
     }
 
     /**
-     * Inputs a button of specified parameters and function.
-     * pre: User clicks button.
-     * post: Desired command is run.
-     */
-    public static void button(int xPosition, int yPosition, int width, int height, String buttonText, String method) {
-        JButton button = new JButton(buttonText);
-        button.setFont(button.getFont().deriveFont((float) (width / 10))); //Makes sure the text on the button is the right
-        //size.
-        button.setBounds(xPosition, yPosition, width, height);
-        display.add(button);
-        button.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) { //What happens when the button is pressed.
-                if (method.equals("logInClient")) {
-                    logInClient();
-                } else if (method.equals("mainMenu")) {
-                    try {
-                        mainMenu();
-                    } catch (IOException ioException) {
-                        ioException.printStackTrace();
-                    }
-                } else if (method.equals("createAccount")) {
-                    createAccount();
-                } else if (method.equals("viewReport")) {
-                    viewReport();
-                } else if (method.equals("createAccountPush")) {
-                    createAccountPush();
-                } else if (method.equals("viewClientInformation")) {
-                    try {
-                        logInClientPush();
-                    } catch (FileNotFoundException fileNotFoundException) {
-                        fileNotFoundException.printStackTrace();
-                    }
-                }
-            }
-        });
-    }
-
-
-    /**
-     * Gets rid of all previous objects on the screen.
-     * pre: Button to open new screen is pressed.
-     * post: All previous elements on the screen are cleared..
-     */
-    public static void refreshScreen() {
-        display.getContentPane().removeAll();
-        display.revalidate();
-        display.repaint();
-    }
-
-    /**
-     * Displays text.
-     * pre: none
-     * post: Chosen text is displayed.
-     */
-    public static void text(int xPosition, int yPosition, int width, int height, int fontSize, String text) {
-        JLabel label;
-        label = new JLabel(text);
-        label.setFont(label.getFont().deriveFont(fontSize + .0f));
-        label.setBounds(xPosition, yPosition, width, height);
-        display.add(label);
-    }
-
-    /**
-     * Displays images from url.
-     * pre: none
-     * post: Chosen image is displayed.
-     */
-    public static void image(int xPosition, int yPosition, int width, int height, String imageURL) throws IOException {
-        URL url = new URL(imageURL);
-        BufferedImage image = ImageIO.read(url);
-        JLabel label = new JLabel(new ImageIcon(image));
-        label.setBounds(xPosition, yPosition, width, height);
-        display.add(label);
-    }
-
-    /**
-     * Displays a text field that the user can write into.
-     * pre: none
-     * post: Chosen image is displayed.
-     */
-    public static void textField(int xPosition, int yPosition, int width, int height, String textVar) {
-        JTextField field;
-        field = new JTextField();
-        field.setBounds(xPosition, yPosition, width, height);
-        display.add(field);
-    }
-
-    /**
-     * Checkbox--------------------------------------------------------------------------------------------------------------
-     * pre: User presses "Log in Client" button.
-     * post: User is prompted to enter the log in information of a client at the bank.
-     */
-
-    static Boolean condition = false; //Universal boolean condition used throughout all checkboxes.
-    static final JLabel checkLabel = new JLabel();
-
-    public static void checkBox(int xPosition, int yPosition, int width, int height, String displayedText) {
-        JCheckBox checkbox1 = new JCheckBox(displayedText);
-        checkbox1.setBounds(xPosition, yPosition, width, height);
-        display.add(checkbox1);
-        display.add(checkLabel);
-        checkbox1.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                checkLabel.setText(displayedText
-                        + (e.getStateChange() == 1 ? "checked" : "unchecked"));
-                if (condition) {
-                    condition = false;
-                } else {
-                    condition = true;
-                }
-            }
-        });
-    }
-
-    /**
      * Displays the main menu.
      * pre: none
      * post: User is given multiple options to choose from to progress program.
@@ -161,6 +40,9 @@ public class GraphicalDisplays extends javax.swing.JFrame {
         errorName1 = false;
         errorPass1 = false;
         accountCreated = false;
+        amountError = false;
+        idError= false;
+        choiceError= false;
 
         image(-200, -50, 1000, 500,
                 "https://raw.githubusercontent.com/Killkase42/1.13.3-Local-Bank-Assignment/master/Images/nationalBankofJava.png");
@@ -173,6 +55,8 @@ public class GraphicalDisplays extends javax.swing.JFrame {
     //The Jlable text field objects that will intake data from the user.
     static JTextField field10;
     static JTextField field11;
+    static JTextField field12;
+    static JTextField field13;
     //Variables used to store data across the createAccount and createAccountPush methods.
     static String enteredFullName1 = "";
     static String enteredPassword1 = "";
@@ -204,6 +88,10 @@ public class GraphicalDisplays extends javax.swing.JFrame {
         field11 = new JTextField();
         field11.setBounds(690, 416, 200, 30);
         display.add(field11);
+        field12 = new JTextField();
+        field13 = new JTextField();
+        field12.setText("");
+        field13.setText("");
 
         //Two if statements below display error message for name and/or password based on variable changes from following
         //error methods.
@@ -278,6 +166,8 @@ public class GraphicalDisplays extends javax.swing.JFrame {
 
     }
 
+    static double clientBalance = 0.00;
+    static int clientID = 0;
     /**
      * Displays an interface in which the logged-in-client's information is displayed. Deposits and withdrawals are made
      * here.
@@ -287,19 +177,30 @@ public class GraphicalDisplays extends javax.swing.JFrame {
     public static void clientModifyScreen(){
         refreshScreen();
 
+        //Getting the client's balance and ID from their file.
         ErrorChecking.authentication(enteredFullName1, "|", "?");
+        clientBalance = Double.parseDouble(passwordCheck);
+        ErrorChecking.authentication(enteredFullName1, "~","`");
+        clientID = Integer.parseInt(passwordCheck);
 
         button(25, 25, 150, 50, "Back to Menu", "mainMenu");
 
         text(510, 160, 1000, 200, 30, "Logged in:");
         text(670, 160, 1000, 200, 30, enteredFullName1);
         text(510, 200, 1000, 200, 30, "Account Balance: $");
-        text(790, 200, 1000, 200, 30, passwordCheck);
+        text(790, 200, 1000, 200, 30, String.valueOf(clientBalance));
 
         button(530, 315, 450, 60, "Deposit/Withdrawal", "depositOrWithdrawal");
-
     }
 
+    static boolean makeDeposit = false;
+    static boolean makeWithdrawal = false;
+    static double enteredAmount = 0.00;
+    static int enteredID = 0;
+    static double newBalance = 0.00;
+    static boolean amountError = false;
+    static boolean idError= false;
+    static boolean choiceError= false;
     /**
      * Allows the user to take money out of or put money into the client's account.
      * pre: User presses "Deposit/Withdrawal" button.
@@ -308,9 +209,134 @@ public class GraphicalDisplays extends javax.swing.JFrame {
     public static void depositOrWithdrawal(){
         refreshScreen();
 
+        //Resetting variables.
+        makeDeposit = false;
+        makeWithdrawal = false;
+
         button(25, 25, 150, 50, "Back to Menu", "mainMenu");
 
-        //Checkboxes for either option
+        button(510, 500, 540, 60, "Commit to File", "completeTransaction");
+
+        text(510, 160, 1000, 200, 30, "Logged in:");
+        text(670, 160, 1000, 200, 30, enteredFullName1);
+        text(510, 200, 1000, 200, 30, "Account Balance: $");
+        text(790, 200, 1000, 200, 30, String.valueOf(clientBalance));
+        text(510, 250, 1000, 200, 30, "Select which one you want to make:");
+        text(510, 330, 1000, 200, 30, "Enter desired amount:");
+        text(510, 365, 1000, 200, 30, "Enter ID for authentication:");
+        field12.setBounds(835, 420, 180, 30);
+        field13.setBounds(900, 455, 115, 30);
+        display.add(field12);
+        display.add(field13);
+        field12.setText("");
+        field13.setText("");
+
+        //Placing the deposit/withdrawal checkboxes.
+        JCheckBox checkbox1 = new JCheckBox("Deposit");
+        JCheckBox checkbox2 = new JCheckBox("Withdrawal");
+        checkbox1.setBounds(750, 370, 100, 50);
+        checkbox2.setBounds(600, 370, 100, 50);
+        display.add(checkbox1);
+        display.add(checkbox2);
+        display.add(checkLabel);
+
+        //Adding functionality to the checkboxes to prevent both from being selected. Also, changes a variable to either
+        //deposit or select money if they are clicked.
+        checkbox1.addItemListener(e -> {
+            checkLabel.setText("Deposit"
+                    + (e.getStateChange() == 1 ? "checked" : "unchecked"));
+            if (checkbox1.isSelected()) {
+                checkbox2.setEnabled(false);
+                makeDeposit = true;
+            } else if (!checkbox1.isSelected()){
+                checkbox2.setEnabled(true);
+                makeDeposit = false;
+            }
+        });
+        checkbox2.addItemListener(e -> {
+            checkLabel.setText("Withdrawal"
+                    + (e.getStateChange() == 1 ? "checked" : "unchecked"));
+            if (checkbox2.isSelected()) {
+                checkbox1.setEnabled(false);
+                makeWithdrawal = true;
+            } else if (!checkbox2.isSelected()){
+                checkbox1.setEnabled(true);
+                makeWithdrawal = false;
+            }
+        });
+
+        if (amountError){
+            field12.setText("");
+            text(1050, 330, 1000, 200, 15, "* Invalid number.");
+        }
+        if (idError){
+            field13.setText("");
+            text(1050, 370, 1000, 200, 15, "* Incorrect ID.");
+        }
+        if (choiceError){
+            text(850, 295, 1000, 200, 15, "* You must pick one.");
+        }
+    }
+
+    /**
+     * Modifies the client's balance (saves to file).
+     * pre: User presses "Complete Transaction" button.
+     * post: Updated client balance is saved to their file.
+     */
+    public static void completeTransaction(){
+        boolean proceed = true;
+        enteredAmount = 0.00;
+        enteredID = 0;
+        amountError = false;
+        idError = false;
+
+        try {
+            enteredAmount = Double.parseDouble(field12.getText());
+            enteredAmount = Math.round(enteredAmount * 100.00) / 100.00;
+            if (makeWithdrawal){
+                if ((clientBalance - enteredAmount) < 0) {
+                    proceed = false;
+                    amountError = true;
+                }
+            }
+        } catch (Exception e){
+            amountError = true;
+            proceed = false;
+        }
+        try {
+            enteredID = Integer.parseInt(field13.getText());
+        } catch (Exception e){
+            idError = true;
+            proceed = false;
+        }
+
+
+
+        if (clientID != enteredID){
+            proceed = false;
+            idError = true;
+        }
+        if (!makeDeposit && !makeWithdrawal){
+        proceed = false;
+        choiceError = true;
+        } else {
+            choiceError = false;
+        }
+        if (proceed){
+            if (makeDeposit && !makeWithdrawal){
+                clientBalance += enteredAmount;
+            } else if (!makeDeposit){
+                clientBalance -= enteredAmount;
+            }
+
+            clientBalance = Math.round(clientBalance * 100.00) / 100.00;
+            ExternalData.createClientAccount(clientID, enteredFullName1, enteredPassword1, clientBalance);
+            clientModifyScreen();
+        } else {
+            depositOrWithdrawal();
+        }
+        enteredAmount = 0.00;
+        enteredID = 0;
 
     }
 
@@ -325,7 +351,7 @@ public class GraphicalDisplays extends javax.swing.JFrame {
     //Variables used to display error messages.
     static Boolean errorName = false;
     static Boolean errorPass = false;
-    static Boolean accountCreated = false; //Serves to show whether or not an account was succesfully created.
+    static Boolean accountCreated = false; //Serves to show whether or not an account was successfully created.
 
     /**
      * Displays an interface in which the user is prompted to create an account.
@@ -363,7 +389,7 @@ public class GraphicalDisplays extends javax.swing.JFrame {
             text(898, 325, 400, 50, 15, "accounts and only include letters.");
         }
         if (errorPass) {
-            text(890, 358, 400, 50, 15, "* Password must include match and");
+            text(890, 358, 400, 50, 15, "* Passwords must match and");
             text(900, 375, 400, 50, 15, "include at least one character.");
         }
         if (accountCreated) {
@@ -429,7 +455,7 @@ public class GraphicalDisplays extends javax.swing.JFrame {
     public static void allGoodMessage() { //Displays that profile was successfully created.
         display.repaint();
         int accountNumber = new Random().nextInt(1000000); //Obtain a number between [0 - 1000000].
-        ExternalData.createClientAccount(accountNumber, enteredFullName, enteredPassword, 0); //Save account.
+        ExternalData.createClientAccount(accountNumber, enteredFullName, enteredPassword, 0.00); //Save account.
         field.setText("");
         field1.setText("");
         field2.setText("");
@@ -437,6 +463,71 @@ public class GraphicalDisplays extends javax.swing.JFrame {
         errorName = false;
         errorPass = false;
         createAccount();
+    }
+
+
+
+    //Make a SPECIFIC button method because it will be placed many times in for loop iteration.
+    public static void buttonSPECIFIC(int xPosition, int yPosition, int width, int height, String buttonText,
+                                      String method, String nameDelete) {
+        JButton button1 = new JButton(buttonText);
+        button1.setFont(button1.getFont().deriveFont((float) (25))); //Makes sure the text on the button is the right
+        //size.
+        button1.setBounds(xPosition, yPosition, width, height);
+        display.add(button1);
+        button1.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) { //What happens when the button is pressed.
+                if (method.equals("deleteAccount")){
+                    deleteAccount(nameDelete);
+                }
+            } //Runs certain method based on button clicked.
+        });
+    }
+
+    static File dir = new File(ExternalData.location); // current directory
+    static int arraylistRow = 0;
+    static String[][] table = new String[4][4]; //Arraylist to store information found in each client's file.
+    static int currentDirListing = 0;
+
+    public static void resetForReportINITIAL(){
+        arraylistRow = 0;
+        currentDirListing = 0;
+        viewReportINITIAL();
+    }
+
+    /**
+     * Puts the information found in client files into an arraylist using recursion.
+     * pre: User presses "View Report" button.
+     * post: Client files are searched and their information is arranged in an arraylist.
+     */
+    public static void viewReportINITIAL() {
+        refreshScreen();
+
+        File[] directoryListing = dir.listFiles();
+
+
+        if (directoryListing != null) {
+            try
+            {
+                arraylistRow ++;
+                String wholeFileName = String.valueOf(directoryListing[currentDirListing]);
+                String fileName = wholeFileName.substring(wholeFileName.indexOf("\\",
+                        wholeFileName.indexOf("\\") + 1) + 1, wholeFileName.indexOf("."));
+
+                //Assigning data within the file to the arraylist.
+                table[arraylistRow][1] = fileName;
+                ErrorChecking.authentication(fileName, "~","`");
+                table[arraylistRow][2] = passwordCheck;
+                ErrorChecking.authentication(fileName, "|","?");
+                table[arraylistRow][3] = passwordCheck;
+
+                currentDirListing ++;
+                viewReportINITIAL();
+            }catch (Exception e){
+
+                viewReport();
+            }
+        }
     }
 
     /**
@@ -448,6 +539,41 @@ public class GraphicalDisplays extends javax.swing.JFrame {
         refreshScreen();
 
         button(25, 25, 150, 50, "Back to Menu", "mainMenu");
+
+        text(400, 100,1000,100,64,"Client Account Report");
+        text(250, 200,300,40,35,"Client Name:");
+        text(650, 200,300,40,35,"Client ID:");
+        text(1050, 200,300,40,35,"Balance:");
+
+        //Actually displaying client information and delete account buttons.
+        try {
+            for (int i = 1; i < arraylistRow; i++) {
+                text(250, i*60+200, 300, 40, 35, table[i][1]);
+                text(650, i*60+200, 300, 40, 35, table[i][2]);
+                text(1050, i*60+200, 150, 40, 35, table[i][3]);
+                text(1025, i*60+200, 50, 40, 35, "$");
+                buttonSPECIFIC(1200, i*60+200, 250, 40, "Delete Account",
+                        "deleteAccount", table[i][1]);
+            }
+
+        } catch (Exception ignored){
+        }
+        if ((table[1][1]) == null){ //If there are no accounts, this is printed when on the client report.
+            text(200, 275,1500,40,35,
+                    "-----------------------//No Client Accounts Found!//-----------------------");
+        }
+    }
+
+    /**
+     * Serves to delete a file then redisplay the client report.
+     * pre: User presses one of the "Delete Account" buttons.
+     * post: Specific acount is deleted and viewReportINITIAL method is run again to redisplay.
+     */
+    public static void deleteAccount(String nameDelete){
+
+        File toDelete = new File(ExternalData.location + "\\" + nameDelete + ".txt");
+        toDelete.delete();
+        resetForReportINITIAL();
     }
 
     /**
